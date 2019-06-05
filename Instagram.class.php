@@ -56,9 +56,12 @@ class Instagram{
     return $file;
   }
   static function getLast($username){
+    return self::getNth($username,0);
+  }
+  static function getNth($username,$nth = 0){
     $cached = self::get($username);
     if ($cached){
-      return $cached;
+      if (isset($cached[$nth][1])){return $cached[$nth][1];}
     }
     $curl = curl_init();
 
@@ -86,9 +89,9 @@ class Instagram{
     if (!$err) {
       $re = '/"shortcode":"(.+)"/mU';
       preg_match_all($re, $response, $matches, PREG_SET_ORDER, 0);
-      if (isset($matches[0]) && isset($matches[0][1]))$last = $matches[0][1];
+      if (isset($matches[$nth]) && isset($matches[$nth][1]))$last = $matches[$nth][1];
     }
-    if ($last) self::save($username,$last);
+    if ($last) self::save($username,$matches);
     return $last;
   }
 }
