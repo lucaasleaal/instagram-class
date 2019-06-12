@@ -1,5 +1,5 @@
 # instagram-class
-An instagram class to get the last post made by an user.
+A class to get the latest posts made by an user on Instagram.
 
 
 ## usage
