@@ -94,4 +94,71 @@ class Instagram{
     if ($last) self::save($username,$matches);
     return $last;
   }
+  static function getNthHashtag($hashtag,$nth = 0){
+    $curl = curl_init();
+
+    curl_setopt_array($curl, array(
+      CURLOPT_URL => "https://www.instagram.com/explore/tags/".$hashtag."/",
+      CURLOPT_RETURNTRANSFER => true,
+      CURLOPT_ENCODING => "",
+      CURLOPT_MAXREDIRS => 10,
+      CURLOPT_TIMEOUT => 30,
+      CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+      CURLOPT_CUSTOMREQUEST => "GET",
+      CURLOPT_POSTFIELDS => "",
+      CURLOPT_HTTPHEADER => array(
+        "cache-control: no-cache"
+      ),
+    ));
+    curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, 0);
+    curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, 0);
+
+    $response = curl_exec($curl);
+    $err = curl_error($curl);
+
+    curl_close($curl);
+    $last = false;
+    if (!$err) {
+      $re = '/"shortcode":"(.+)"/mU';
+      preg_match_all($re, $response, $matches, PREG_SET_ORDER, 0);
+      if (isset($matches[$nth]) && isset($matches[$nth][1]))$last = $matches[$nth][1];
+    }
+    return $last;
+  }
+  static function getPicture($id){
+    $cached = self::get('picture~'.$id);
+    if ($cached){
+      return $cached[0][1];
+    }
+    $curl = curl_init();
+
+    curl_setopt_array($curl, array(
+      CURLOPT_URL => "https://www.instagram.com/p/".$id."/embed/",
+      CURLOPT_RETURNTRANSFER => true,
+      CURLOPT_ENCODING => "",
+      CURLOPT_MAXREDIRS => 10,
+      CURLOPT_TIMEOUT => 30,
+      CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+      CURLOPT_CUSTOMREQUEST => "GET",
+      CURLOPT_POSTFIELDS => "",
+      CURLOPT_HTTPHEADER => array(
+        "cache-control: no-cache"
+      ),
+    ));
+    curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, 0);
+    curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, 0);
+
+    $response = curl_exec($curl);
+    $err = curl_error($curl);
+
+    curl_close($curl);
+    $last = false;
+    if (!$err) {
+      $re = '/img class="EmbeddedMediaImage" src="(.+)"/mU';
+      preg_match_all($re, $response, $matches, PREG_SET_ORDER, 0);
+      if (isset($matches[0]) && isset($matches[0][1]))$last = $matches[0][1];
+    }
+    if ($last) self::save('picture~'.$id,$matches);
+    return $last;
+  }
 }
