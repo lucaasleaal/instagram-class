@@ -59,6 +59,7 @@ class Instagram{
     return self::getNth($username,0);
   }
   static function getNth($username,$nth = 0){
+    $username = str_replace('@','',$username);
     $cached = self::get($username);
     if ($cached){
       if (isset($cached[$nth][1])){return $cached[$nth][1];}
@@ -94,11 +95,16 @@ class Instagram{
     if ($last) self::save($username,$matches);
     return $last;
   }
-  static function getNthHashtag($hashtag,$nth = 0){
+  static function getNthFoto($username,$nth = 0){
+    $username = str_replace('@','',$username);
+    $cached = self::get('foto-'.$username);
+    if ($cached){
+      if (isset($cached[$nth][1])){return $cached[$nth][1];}
+    }
     $curl = curl_init();
 
     curl_setopt_array($curl, array(
-      CURLOPT_URL => "https://www.instagram.com/explore/tags/".$hashtag."/",
+      CURLOPT_URL => "https://www.instagram.com/".$username."/",
       CURLOPT_RETURNTRANSFER => true,
       CURLOPT_ENCODING => "",
       CURLOPT_MAXREDIRS => 10,
@@ -119,10 +125,103 @@ class Instagram{
     curl_close($curl);
     $last = false;
     if (!$err) {
+      $re = '/GraphImage.+"shortcode":"(.+)"/mU';
+      preg_match_all($re, $response, $matches, PREG_SET_ORDER, 0);
+      if (isset($matches[$nth]) && isset($matches[$nth][1]))$last = $matches[$nth][1];
+    }
+    if ($last) self::save('foto-'.$username,$matches);
+    return $last;
+  }
+  static function getNthHashtag($hashtag,$nth = 0){
+    $hashtag = str_replace('#', '', $hashtag);
+    $cached = self::get('#'.$hashtag);
+    if ($cached){
+      if (isset($cached[$nth][1])){return $cached[$nth][1];}
+    }
+    $curl = curl_init();
+
+    curl_setopt_array($curl, array(
+      CURLOPT_URL => "https://www.instagram.com/explore/tags/".$hashtag."/",
+      CURLOPT_RETURNTRANSFER => true,
+      CURLOPT_ENCODING => "",
+      CURLOPT_MAXREDIRS => 10,
+      CURLOPT_TIMEOUT => 30,
+      CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+      CURLOPT_CUSTOMREQUEST => "GET",
+      CURLOPT_POSTFIELDS => "",
+      CURLOPT_HTTPHEADER => array(
+        "accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3",
+        "accept-encoding: gzip, deflate, br",
+        "accept-language: pt-BR,pt;q=0.9,en-US;q=0.8,en;q=0.7,la;q=0.6",
+        "cache-control: no-cache",
+        "pragma: no-cache",
+        "sec-fetch-mode: navigate",
+        "sec-fetch-site: same-origin",
+        "sec-fetch-user: ?1",
+        "upgrade-insecure-requests: 1",
+        "user-agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/77.0.3865.90 Safari/537.36",
+      ),
+    ));
+    curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, 0);
+    curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, 0);
+
+    $response = curl_exec($curl);
+    $err = curl_error($curl);
+
+    curl_close($curl);
+    $last = false;
+    if (!$err) {
       $re = '/"shortcode":"(.+)"/mU';
       preg_match_all($re, $response, $matches, PREG_SET_ORDER, 0);
       if (isset($matches[$nth]) && isset($matches[$nth][1]))$last = $matches[$nth][1];
     }
+    if ($last) self::save('#'.$hashtag,$matches,180);
+    return $last;
+  }
+  static function getNthHashtagFoto($hashtag,$nth = 0){
+    $hashtag = str_replace('#', '', $hashtag);
+    $cached = self::get('#foto-'.$hashtag);
+    if ($cached){
+      if (isset($cached[$nth][1])){return $cached[$nth][1];}
+    }
+    $curl = curl_init();
+
+    curl_setopt_array($curl, array(
+      CURLOPT_URL => "https://www.instagram.com/explore/tags/".$hashtag."/",
+      CURLOPT_RETURNTRANSFER => true,
+      CURLOPT_ENCODING => "",
+      CURLOPT_MAXREDIRS => 10,
+      CURLOPT_TIMEOUT => 30,
+      CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+      CURLOPT_CUSTOMREQUEST => "GET",
+      CURLOPT_POSTFIELDS => "",
+      CURLOPT_HTTPHEADER => array(
+        "accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3",
+        "accept-encoding: gzip, deflate, br",
+        "accept-language: pt-BR,pt;q=0.9,en-US;q=0.8,en;q=0.7,la;q=0.6",
+        "cache-control: no-cache",
+        "pragma: no-cache",
+        "sec-fetch-mode: navigate",
+        "sec-fetch-site: same-origin",
+        "sec-fetch-user: ?1",
+        "upgrade-insecure-requests: 1",
+        "user-agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/77.0.3865.90 Safari/537.36",
+      ),
+    ));
+    curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, 0);
+    curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, 0);
+
+    $response = curl_exec($curl);
+    $err = curl_error($curl);
+
+    curl_close($curl);
+    $last = false;
+    if (!$err) {
+      $re = '/GraphImage.+"shortcode":"(.+)"/mU';
+      preg_match_all($re, $response, $matches, PREG_SET_ORDER, 0);
+      if (isset($matches[$nth]) && isset($matches[$nth][1]))$last = $matches[$nth][1];
+    }
+    if ($last) self::save('#foto-'.$hashtag,$matches,180);
     return $last;
   }
   static function getPicture($id){
